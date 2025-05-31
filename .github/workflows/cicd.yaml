@@ -79,6 +79,6 @@ jobs:
         run: |
           git config user.email "GHA bot"
           git config user.name "actions@github.com"
-          git add k8s/manifests/deployment.yaml
+          git add k8s/manifests/go-app-static-full.yaml
           git commit -m "ci: update image tag to $IMAGE_TAG (triggered by ${{ github.actor }})"
           git push
