@@ -20,9 +20,12 @@ spec:
     spec:
       containers:
         - name: go-web-app
-          image: gesatessa/go_cicd:v1
+          image: ghcr.io/gesatessa/go_cicd:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
+      imagePullSecrets:
+        - name: ghcr-secret
 ---
 apiVersion: v1
 kind: Service
