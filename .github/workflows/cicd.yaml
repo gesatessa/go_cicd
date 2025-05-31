@@ -43,7 +43,7 @@ jobs:
     needs: [lint, test]
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ghcr.io/${{ varss.GH_USERNAME }}/go_cicd
+      IMAGE_NAME: ghcr.io/${{ vars.GH_USERNAME }}/go_cicd
       IMAGE_TAG: v${{ github.run_number }}
     steps:
       - name: Checkout code
