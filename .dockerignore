@@ -1,0 +1,40 @@
+# Binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace stuff
+bin/
+pkg/
+obj/
+
+# Vendor directory (if using Go modules and vendoring)
+vendor/
+
+# VCS
+.git/
+.gitignore
+.gitattributes
+
+# Editor/IDE
+*.swp
+*.swo
+*.tmp
+*.bak
+*.log
+.idea/
+.vscode/
+*.DS_Store
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Config and environment files
+.env
+*.local
+*.secret
