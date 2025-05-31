@@ -3,14 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-    paths:
-      - '**.go'
-      - 'go.mod'
-      - 'Dockerfile'
-      - '.github/workflows/**'
     paths-ignore:
       - '**.md'
       - 'README*'
+      - 'k8s/**'
 
 jobs:
   lint:
