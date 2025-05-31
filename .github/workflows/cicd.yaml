@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'Dockerfile'
+      - '.github/workflows/**'
+    paths-ignore:
+      - '**.md'
+      - 'README*'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Run Go Lint
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Run Go Tests
+        run: go test ./...
+
+  docker:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ghcr.io/${{ varss.GH_USERNAME }}/go_cicd
+      IMAGE_TAG: v${{ github.run_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker auth for GHCR
+        run: echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u "${{ vars.GH_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
+
+      - name: Save image tag for downstream jobs
+        run: echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+  update-manifests:
+    needs: docker
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ghcr.io/${{ vars.GH_USERNAME }}/go_cicd
+      IMAGE_TAG: v${{ github.run_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update image tag in deployment manifest
+        run: |
+          yq e -i '.spec.template.spec.containers[0].image = "${IMAGE_NAME}:${IMAGE_TAG}"' k8s/manifests/go-app-static-full.yaml
+
+      - name: Commit updated manifest
+        run: |
+          git config user.email "GHA bot"
+          git config user.name "actions@github.com"
+          git add k8s/manifests/deployment.yaml
+          git commit -m "ci: update image tag to $IMAGE_TAG (triggered by ${{ github.actor }})"
+          git push
