@@ -75,7 +75,7 @@ jobs:
 
       - name: Update image tag in deployment manifest
         run: |
-          yq e -i '.spec.template.spec.containers[0].image = "${IMAGE_NAME}:${IMAGE_TAG}"' k8s/manifests/go-app-static-full.yaml
+          sed -i -E "s|(image:\s*ghcr.io/gesatessa/go_cicd:)[^ ]+|\1${IMAGE_TAG}|g" k8s/manifests/go-app-static-full.yaml
 
       - name: Commit updated manifest
         run: |
